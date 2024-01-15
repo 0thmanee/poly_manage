@@ -6,10 +6,16 @@
 #include <math.h>
 #include <string.h>
 
+typedef	struct s_coeff
+{
+	int a;
+	int b;
+}	t_coeff;
+
 typedef struct s_polynome
 {
 	int degree;
-	int coeff;
+	t_coeff *coeff;
 	struct s_polynome *next;
 } 	t_polynome;
 
