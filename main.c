@@ -1,5 +1,149 @@
 #include "polynome.h"
 
+// cette fonction permet de compter le nombre de mots dans une chaine de caractères
+// La Complexité de cette fonction est O(n)
+static size_t	count_words(char const *s, char c)
+{
+	size_t	i;
+	size_t	count;
+
+	i = 0;
+	count = 0;
+	while (s[i])
+	{
+		while (s[i] && s[i] == c)
+			i++;
+		if (s[i])
+		{
+			if (i == 0 || s[i - 1] == c)
+				count++;
+			i++;
+		}
+	}
+	return (count);
+}
+
+// cette fonction permet de calculer la longueur d'un mot dans une chaine de caractères
+// La Complexité de cette fonction est O(n)
+static size_t	calc_len(char const *s, char c)
+{
+	size_t	i;
+	size_t	count;
+
+	count = 0;
+	i = 0;
+	while (s[i] != c && s[i])
+	{
+		i++;
+		count++;
+	}
+	return (count);
+}
+
+// cette fonction permet de remplir une sous-chaine de caractères
+// La Complexité de cette fonction est O(n)
+static char	*fill_subs(char const **s, char c)
+{
+	size_t	i;
+	char	*subs;
+	size_t	len;
+
+	while (**s == c && **s)
+		(*s)++;
+	len = calc_len(*s, c);
+	subs = (char *) malloc (sizeof (char) * (len + 1));
+	if (!subs)
+		return (NULL);
+	i = 0;
+	while (i < len)
+	{
+		subs[i] = **s;
+		i++;
+		(*s)++;
+	}
+	subs[i] = '\0';
+	return (subs);
+}
+
+// cette fonction permet de séparer une chaine de caractères en plusieurs sous-chaines
+// La Complexité de cette fonction est O(n)
+char	**ft_split(char const *s, char c)
+{
+	size_t	nbr_words;
+	char	**strings;
+	size_t	i;
+
+	i = 0;
+	if (!s)
+		return (NULL);
+	nbr_words = count_words(s, c);
+	strings = (char **) malloc (sizeof(char *) * (nbr_words + 1));
+	if (!strings)
+		return (NULL);
+	while (i < nbr_words)
+	{
+		strings[i] = fill_subs(&s, c);
+		if (!strings[i])
+		{
+			while (i > 0)
+				free(strings[--i]);
+			free (strings);
+			return (NULL);
+		}
+		i++;
+	}
+	strings[i] = NULL;
+	return (strings);
+}
+
+// cette fonction permet d'ajouter un élément à la fin d'une liste chainée
+// La Complexité de cette fonction est O(n)
+void	lstadd_back(t_polynome **lst, t_polynome *new)
+{
+	t_polynome	*curr;
+
+	if (new == NULL)
+		return ;
+	if (*lst == NULL)
+	{
+		*lst = new;
+		return ;
+	}
+	curr = *lst;
+	while (curr->next != NULL)
+	{
+		curr = curr->next;
+	}
+	curr->next = new;
+}
+
+// cette fonction permet de SUBSTR une chaine de caractères
+// La Complexité de cette fonction est O(n)
+char	*ft_substr(char const *s, unsigned int start, size_t len)
+{
+	unsigned int	i;
+	char			*subs;
+
+	if (!s)
+		return (NULL);
+	if (len > strlen(s) - start)
+		len = strlen(s) - start;
+	subs = (char *)malloc(len + 1);
+	if (!subs)
+		return (NULL);
+	i = 0;
+	while (i < len && s[start])
+	{
+		subs[i] = s[start];
+		start++;
+		i++;
+	}
+	subs[i] = '\0';
+	return (subs);
+}
+
+// cette fonction affiche les règles du programme, elle est appelée lors de l'execution de la commande "Help"
+// La Complexité de cette fonction est O(1)
 void display_rules(void)
 {
 	printf("\t\t\t\t\t\x1b[32m(*) LET:     To Enter Your Polynom\n");
@@ -16,6 +160,8 @@ void display_rules(void)
 	printf("\t\t\t\t\t\x1b[32m(*) EXIT:    To Exit The Program\n\n");
 }
 
+// cette fonction permet de vérifier si la commande entrée par l'utilisateur est valide ou non
+// La Complexité de cette fonction est O(1)
 char	*valid_cmd(char *cmd)
 {
 	if (strcmp(cmd, "LET") && strcmp(cmd, "SET") && strcmp(cmd, "DISPLAY") && strcmp(cmd, "ADD") && strcmp(cmd, "SUB") && strcmp(cmd, "MUL") && strcmp(cmd, "POW") && strcmp(cmd, "AFFECT") && strcmp(cmd, "DER") && strcmp(cmd, "INT") && strcmp(cmd, "EVAL") && strcmp(cmd, "EXIT") && strcmp(cmd, "Help"))
@@ -26,6 +172,8 @@ char	*valid_cmd(char *cmd)
 	return cmd;
 }
 
+// cette fonction libere la mémoire allouée pour la fonction ft_split
+// La Complexité de cette fonction est O(n)
 void free_terminal(char **terminal)
 {
 	int i = 0;
@@ -38,6 +186,8 @@ void free_terminal(char **terminal)
 	free(terminal);
 }
 
+// cette fonction permet de libérer la mémoire allouée pour la liste chainée p1
+// La Complexité de cette fonction est O(n)
 void free_p1(t_polynome **p1)
 {
 	t_polynome *tmp = NULL;
@@ -49,6 +199,8 @@ void free_p1(t_polynome **p1)
 	}
 }
 
+// cette fonction permet de libérer la mémoire allouée pour la liste chainée p2
+// La Complexité de cette fonction est O(n)
 void free_p2(t_polynome **p2)
 {
 	t_polynome *tmp = NULL;
@@ -60,6 +212,64 @@ void free_p2(t_polynome **p2)
 	}
 }
 
+
+int new_degree(int *degs, int degree)
+{
+	int i = 0;
+	while (i < 100)
+	{
+		if (degs[i] == degree)
+			return 0;
+		i++;
+	}
+	return 1;
+}
+
+// cette fonction permet d'optimiser le polynome entré par l'utilisateur
+// La Complexité de cette fonction est O(n)
+t_polynome *optmz_polynom(t_polynome *p)
+{
+	// t_polynome *res = NULL;
+	// t_polynome *tmp = p;
+	// t_polynome *tmp2 = NULL;
+	// t_polynome *node = NULL;
+	// int degs[100] = {-1};
+	// int i = 0;
+	// while (tmp)
+	// {
+	// 	tmp2 = p->next;
+	// 	if (new_degree(degs, tmp->degree))
+	// 	{
+	// 		degs[i] = tmp->degree;
+	// 		i++;
+	// 		node = malloc(sizeof(t_polynome));
+	// 		if (!node)
+	// 			return (NULL);
+	// 		node->coeff = malloc(sizeof(t_coeff));
+	// 		if (!node->coeff)
+	// 			return (NULL);
+	// 		node->degree = tmp->degree;
+	// 		node->coeff->a = tmp->coeff->a;
+	// 		node->coeff->b = tmp->coeff->b;
+	// 		while (tmp2)
+	// 		{
+	// 			if (tmp->degree == tmp2->degree)
+	// 			{
+	// 				node->coeff->a = (node->coeff->a * tmp2->coeff->b) + (tmp2->coeff->a * node->coeff->b);
+	// 				node->coeff->b = node->coeff->b * tmp2->coeff->b;
+	// 				lstadd_back(&res, node);
+	// 			}
+	// 			tmp2 = tmp2->next;
+	// 		}
+	// 	}
+	// 	tmp = tmp->next;
+	// }
+	// return res;
+	return p;
+}
+
+// cette fonction permet de créer une liste chainée qui contient les coefficients et les degrés du polynome entré par l'utilisateur
+// La Complexité de cette fonction est O(n)
 t_polynome* create_polynome(char* str, t_polynome* p)
 {
 	int i = 0;
@@ -140,9 +350,11 @@ t_polynome* create_polynome(char* str, t_polynome* p)
 		sign = 1;
 		i++;
 	}
-	return p;
+	return optmz_polynom(p);
 }
 
+// cette fonction permet d'afficher le polynome entré par l'utilisateur
+// La Complexité de cette fonction est O(n)
 void display_polynome(t_polynome *p, char name)
 {
 	t_polynome *tmp = p;
@@ -174,6 +386,8 @@ void display_polynome(t_polynome *p, char name)
 	printf(" >>\n\n\n");
 }
 
+// cette fonction permet d'additionner deux polynomes
+// La Complexité de cette fonction est O(n)
 t_polynome *add_polynomes(t_polynome *p1, t_polynome *p)
 {
 	t_polynome *res = NULL;
@@ -232,9 +446,11 @@ t_polynome *add_polynomes(t_polynome *p1, t_polynome *p)
 		lstadd_back(&res, node);
 		tmp2 = tmp2->next;
 	}
-	return res;
+	return optmz_polynom(res);
 }
 
+// cette fonction permet de soustraire deux polynomes
+// La Complexité de cette fonction est O(n)
 t_polynome *sub_polynoms(t_polynome *p1, t_polynome *p)
 {
 	t_polynome *res = NULL;
@@ -293,9 +509,11 @@ t_polynome *sub_polynoms(t_polynome *p1, t_polynome *p)
 		lstadd_back(&res, node);
 		tmp2 = tmp2->next;
 	}
-	return res;
+	return optmz_polynom(res);
 }
 
+// cette fonction permet de multiplier deux polynomes
+// La Complexité de cette fonction est O(n)
 t_polynome *mul_polynoms(t_polynome *p1, t_polynome *p)
 {
 	t_polynome *res = NULL;
@@ -321,37 +539,8 @@ t_polynome *mul_polynoms(t_polynome *p1, t_polynome *p)
 		}
 		tmp = tmp->next;
 	}
-	return res;
+	return optmz_polynom(res);
 }
-
-// t_polynome *optmz_polynom(t_polynome *p)
-// {
-// 	t_polynome *res = NULL; // New list to store optimized polynomial
-// 	t_polynome *tmp = p;
-// 	t_polynome *tmp2 = p;
-// 	t_polynome *node = NULL;
-// 	int degs[1000] = {0};
-// 	while (tmp)
-// 	{
-// 		while (degs[tmp->degree] == 1)
-// 			tmp = tmp->next;
-// 		node = malloc(sizeof(t_polynome));
-// 		node->coeff = tmp->coeff;
-// 		node->degree = tmp->degree;
-// 		node->coeff = tmp->coeff;
-// 		tmp2 = tmp->next;
-// 		while (tmp2)
-// 		{
-// 			if (tmp->degree == tmp2->degree && degs[tmp2->degree] == 0)
-// 				node->coeff += tmp2->coeff;
-// 			tmp2 = tmp2->next;
-// 		}
-// 		degs[tmp->degree] = 1;
-// 		lstadd_back(&res, node);
-// 		tmp = tmp->next;
-// 	}
-// 	return res;
-// }
 
 t_polynome *der_polynom(t_polynome *p)
 {
@@ -372,7 +561,7 @@ t_polynome *der_polynom(t_polynome *p)
 		lstadd_back(&res, node);
 		tmp = tmp->next;
 	}
-	return res;
+	return optmz_polynom(res);
 }
 
 t_polynome *int_polynom(t_polynome *p)
@@ -394,9 +583,10 @@ t_polynome *int_polynom(t_polynome *p)
 		lstadd_back(&res, node);
 		tmp = tmp->next;
 	}
-	return res;
+	return optmz_polynom(res);
 }
 
+// La fonction main est la fonction principale du programme
 int main()
 {
 	char	**terminal = NULL;
@@ -430,7 +620,7 @@ int main()
 					free_terminal(terminal);
 					system("clear");
 				}
-				else p1 = (create_polynome(ft_substr(terminal[1], 2, strlen(terminal[1])), p1));
+				else p1 = create_polynome(ft_substr(terminal[1], 2, strlen(terminal[1])), p1);
 			}
 			else if (terminal[1][0] == 'Q')
 			{
@@ -440,7 +630,7 @@ int main()
 					free_terminal(terminal);
 					system("clear");
 				}
-				else p2 = (create_polynome(ft_substr(terminal[1], 2, strlen(terminal[1])), p2));
+				else p2 = create_polynome(ft_substr(terminal[1], 2, strlen(terminal[1])), p2);
 			}
 			else
 			{
@@ -460,12 +650,12 @@ int main()
 			else if (terminal[1][0] == 'P')
 			{
 				free_p1(&p1);
-				p1 = (create_polynome(ft_substr(terminal[1], 2, strlen(terminal[1])), p1));
+				p1 = create_polynome(ft_substr(terminal[1], 2, strlen(terminal[1])), p1);
 			}
 			else if (terminal[1][0] == 'Q')
 			{
 				free_p2(&p2);
-				p2 = (create_polynome(ft_substr(terminal[1], 2, strlen(terminal[1])), p2));
+				p2 = create_polynome(ft_substr(terminal[1], 2, strlen(terminal[1])), p2);
 			}
 			else
 			{
@@ -725,7 +915,7 @@ int main()
 						res = mul_polynoms(res, p1);
 						pow--;
 					}
-					display_polynome(res, 'R');
+					display_polynome(optmz_polynom(res), 'R');
 				}
 			}
 			else if (terminal[1][0] == 'Q')
@@ -948,7 +1138,7 @@ int main()
 			system("clear");
 			break;
 		}
-		
+
 		else
 		{
 			free_terminal(terminal);
